@@ -1,0 +1,40 @@
+{
+  "name": "focuslens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FocusLens — a hackathon-level productivity tracker and AI assistant (Electron + React)",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5181 && electron .\"",
+    "start": "electron .",
+    "build:renderer": "vite build",
+    "build": "npm run build:renderer && electron-builder",
+    "server": "node ./server/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "active-win": "^9.0.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.5",
+    "electron-store": "^8.1.0",
+    "openai": "^4.67.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "concurrently": "^9.0.1",
+    "electron": "^32.1.2",
+    "electron-builder": "^25.1.8",
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-python-requirements": "^6.1.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "wait-on": "^8.0.2"
+  }
+}

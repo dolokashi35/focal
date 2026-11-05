@@ -1,0 +1,347 @@
+service: focus-ai
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-west-2
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 30
+  
+  environment:
+    S3_BUCKET_NAME: ${self:service}-${self:provider.stage}-data
+    DYNAMODB_TABLE_NAME: ${self:service}-${self:provider.stage}-events
+    SAGEMAKER_ENDPOINT: ${self:service}-${self:provider.stage}-endpoint
+    COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+    COGNITO_IDENTITY_POOL_ID: !Ref CognitoIdentityPool
+    
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+        - s3:DeleteObject
+      Resource: 
+        - arn:aws:s3:::${self:service}-${self:provider.stage}-data/*
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage}-events
+    - Effect: Allow
+      Action:
+        - textract:DetectDocumentText
+        - textract:AnalyzeDocument
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - bedrock:InvokeModel
+        - bedrock:InvokeModelWithResponseStream
+      Resource: 
+        - arn:aws:bedrock:${self:provider.region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0
+        - arn:aws:bedrock:${self:provider.region}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0
+    - Effect: Allow
+      Action:
+        - sagemaker-runtime:InvokeEndpoint
+      Resource: 
+        - arn:aws:sagemaker:${self:provider.region}:*:endpoint/${self:service}-${self:provider.stage}-endpoint
+    - Effect: Allow
+      Action:
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminUpdateUserAttributes
+      Resource:
+        - !GetAtt CognitoUserPool.Arn
+
+plugins:
+  - serverless-python-requirements
+  - serverless-aws-documentation
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    pipCmdExtraArgs:
+      - --no-cache-dir
+  documentation:
+    api:
+      info:
+        title: Focus AI API
+        description: Privacy-first productivity tracking and AI coaching
+        version: 1.0.0
+      paths:
+        /ingest:
+          post:
+            summary: Ingest activity events
+            description: Receives activity events from desktop app and stores them
+            requestBody:
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      events:
+                        type: array
+                        items:
+                          type: object
+        /classify:
+          post:
+            summary: Classify activity and get AI feedback
+            description: Analyzes activity and returns focus score with AI coaching
+            requestBody:
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                      app:
+                        type: string
+                      title:
+                        type: string
+                      url:
+                        type: string
+                      keystrokes:
+                        type: integer
+                      mouse:
+                        type: integer
+
+functions:
+  ingest:
+    handler: lambdas/ingest/index.lambda_handler
+    description: Ingest activity events from desktop app
+    events:
+      - http:
+          path: ingest
+          method: post
+          cors: true
+          authorizer:
+            name: CognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+    environment:
+      S3_BUCKET_NAME: ${self:service}-${self:provider.stage}-data
+      DYNAMODB_TABLE_NAME: ${self:service}-${self:provider.stage}-events
+      
+  classify:
+    handler: lambdas/classify/index.lambda_handler
+    description: Classify activity and generate AI feedback
+    events:
+      - http:
+          path: classify
+          method: post
+          cors: true
+          authorizer:
+            name: CognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+    environment:
+      S3_BUCKET_NAME: ${self:service}-${self:provider.stage}-data
+      DYNAMODB_TABLE_NAME: ${self:service}-${self:provider.stage}-events
+      SAGEMAKER_ENDPOINT: ${self:service}-${self:provider.stage}-endpoint
+
+resources:
+  Resources:
+    # S3 Bucket for storing screenshots and data
+    DataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${self:provider.stage}-data
+        VersioningConfiguration:
+          Status: Enabled
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteOldScreenshots
+              Status: Enabled
+              ExpirationInDays: 30
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ["*"]
+              AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+              AllowedOrigins: ["*"]
+              MaxAge: 3000
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+          
+    # DynamoDB Table for events and classifications
+    EventsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-events
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+          
+    # Cognito User Pool for authentication
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${self:provider.stage}-users
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Required: true
+            Mutable: true
+          - Name: name
+            AttributeDataType: String
+            Required: false
+            Mutable: true
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: false
+          
+    # Cognito User Pool Client
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref CognitoUserPool
+        ClientName: ${self:service}-${self:provider.stage}-client
+        GenerateSecret: false
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        SupportedIdentityProviders:
+          - COGNITO
+        CallbackURLs:
+          - http://localhost:3000/callback
+          - https://focus-ai.app/callback
+        LogoutURLs:
+          - http://localhost:3000/logout
+          - https://focus-ai.app/logout
+          
+    # Cognito Identity Pool
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: ${self:service}-${self:provider.stage}-identity
+        AllowUnauthenticatedIdentities: false
+        CognitoIdentityProviders:
+          - ClientId: !Ref CognitoUserPoolClient
+            ProviderName: !GetAtt CognitoUserPool.ProviderName
+            
+    # IAM Role for Cognito Identity Pool
+    CognitoIdentityPoolRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:service}-${self:provider.stage}-cognito-role
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action: sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  'cognito-identity.amazonaws.com:aud': !Ref CognitoIdentityPool
+                'ForAnyValue:StringLike':
+                  'cognito-identity.amazonaws.com:amr': authenticated
+        Policies:
+          - PolicyName: FocusAIAccess
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - execute-api:Invoke
+                  Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*"
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:DeleteObject
+                  Resource: !Sub "${DataBucket}/*"
+                - Effect: Allow
+                  Action:
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                  Resource: !GetAtt EventsTable.Arn
+                  
+    # Attach role to identity pool
+    CognitoIdentityPoolRoleAttachment:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId: !Ref CognitoIdentityPool
+        Roles:
+          authenticated: !GetAtt CognitoIdentityPoolRole.Arn
+          
+    # CloudWatch Log Group
+    LogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: /aws/lambda/${self:service}-${self:provider.stage}
+        RetentionInDays: 14
+        
+  Outputs:
+    ApiGatewayRestApiId:
+      Value: !Ref ApiGatewayRestApi
+      Export:
+        Name: ${self:service}-${self:provider.stage}-api-id
+    ApiGatewayRestApiRootResourceId:
+      Value: !GetAtt ApiGatewayRestApi.RootResourceId
+      Export:
+        Name: ${self:service}-${self:provider.stage}-api-root-resource-id
+    DataBucketName:
+      Value: !Ref DataBucket
+      Export:
+        Name: ${self:service}-${self:provider.stage}-data-bucket
+    EventsTableName:
+      Value: !Ref EventsTable
+      Export:
+        Name: ${self:service}-${self:provider.stage}-events-table
+    CognitoUserPoolId:
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${self:provider.stage}-user-pool-id
+    CognitoUserPoolClientId:
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: ${self:service}-${self:provider.stage}-user-pool-client-id
+    CognitoIdentityPoolId:
+      Value: !Ref CognitoIdentityPool
+      Export:
+        Name: ${self:service}-${self:provider.stage}-identity-pool-id
+    ApiUrl:
+      Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}"
+      Export:
+        Name: ${self:service}-${self:provider.stage}-api-url
+
+

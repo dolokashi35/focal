@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0b1020 0%, #1a1f2e 100%);
+            color: #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #60a5fa, #22c55e);
+        }
+        
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .focus-score {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .score-circle circle {
+            fill: none;
+            stroke-width: 8;
+        }
+        
+        .score-circle .background {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+        
+        .score-circle .progress {
+            stroke: url(#gradient);
+            stroke-linecap: round;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .score-number {
+            position: absolute;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .score-label {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        
+        .score-description {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .current-activity {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .app-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .app-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .app-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .app-details p {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .ai-nudge {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #60a5fa;
+            margin-top: 16px;
+        }
+        
+        .nudge-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .nudge-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e5e7eb;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <div class="logo-text">Focus AI</div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="status-text">Tracking Active</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="focus-score">
+                <div class="score-label">Focus Score</div>
+                <div class="score-circle">
+                    <svg width="120" height="120">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="background" cx="60" cy="60" r="50"></circle>
+                        <circle class="progress" cx="60" cy="60" r="50" id="score-progress"></circle>
+                    </svg>
+                    <div class="score-number" id="score-number">85</div>
+                </div>
+                <div class="score-description" id="score-description">Excellent focus! Keep up the great work.</div>
+            </div>
+            
+            <div class="current-activity">
+                <div class="activity-header">
+                    <span>🎯</span>
+                    <span>Current Activity</span>
+                </div>
+                <div class="app-info">
+                    <div class="app-icon" id="app-icon">VS</div>
+                    <div class="app-details">
+                        <h3 id="app-name">VS Code</h3>
+                        <p id="app-title">main.py - FocusLens</p>
+                    </div>
+                </div>
+                
+                <div class="ai-nudge" id="ai-nudge">
+                    <div class="nudge-header">
+                        <span>🤖</span>
+                        <span>AI Coach</span>
+                    </div>
+                    <div class="nudge-text" id="nudge-text">
+                        Great coding session! You're making excellent progress on the FocusLens project.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="session-time">2h 34m</div>
+                    <div class="stat-label">Session Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="keystrokes">1,247</div>
+                    <div class="stat-label">Keystrokes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="focus-streak">5</div>
+                    <div class="stat-label">Focus Streak</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="distractions">2</div>
+                    <div class="stat-label">Distractions</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" id="settings-btn">Settings</button>
+                <button class="btn btn-primary" id="toggle-btn">Stop Tracking</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration
+        let isTracking = true;
+        let currentScore = 85;
+        let sessionStartTime = Date.now() - (2 * 60 * 60 * 1000) - (34 * 60 * 1000); // 2h 34m ago
+        
+        // Update score circle
+        function updateScoreCircle(score) {
+            const circle = document.getElementById('score-progress');
+            const circumference = 2 * Math.PI * 50; // radius = 50
+            const offset = circumference - (score / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            document.getElementById('score-number').textContent = score;
+            
+            // Update description based on score
+            let description = '';
+            if (score >= 80) {
+                description = 'Excellent focus! Keep up the great work.';
+            } else if (score >= 60) {
+                description = 'Good focus! Stay on track.';
+            } else if (score >= 40) {
+                description = 'Moderate focus. Try to minimize distractions.';
+            } else {
+                description = 'Low focus. Time to refocus on your goals.';
+            }
+            document.getElementById('score-description').textContent = description;
+        }
+        
+        // Update session time
+        function updateSessionTime() {
+            const now = Date.now();
+            const elapsed = now - sessionStartTime;
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById('session-time').textContent = `${hours}h ${minutes}m`;
+        }
+        
+        // Simulate activity updates
+        function simulateActivity() {
+            const activities = [
+                { app: 'VS Code', title: 'main.py - FocusLens', icon: 'VS', score: 85, nudge: 'Great coding session! You\'re making excellent progress on the FocusLens project.' },
+                { app: 'Chrome', title: 'GitHub - FocusLens Repository', icon: 'CH', score: 82, nudge: 'Good research! Keep documenting your progress.' },
+                { app: 'Terminal', title: 'FocusLens - npm run dev', icon: 'TT', score: 90, nudge: 'Excellent debugging session! You\'re solving problems efficiently.' },
+                { app: 'Chrome', title: 'Stack Overflow - React useState', icon: 'SO', score: 78, nudge: 'Learning new concepts! This will help improve your skills.' },
+                { app: 'VS Code', title: 'App.tsx - FocusLens', icon: 'VS', score: 87, nudge: 'Great React development! Your component structure looks clean.' }
+            ];
+            
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                if (!isTracking) return;
+                
+                const activity = activities[currentIndex % activities.length];
+                
+                // Update app info
+                document.getElementById('app-icon').textContent = activity.icon;
+                document.getElementById('app-name').textContent = activity.app;
+                document.getElementById('app-title').textContent = activity.title;
+                
+                // Update score with animation
+                const targetScore = activity.score + Math.floor(Math.random() * 10) - 5; // Add some variance
+                animateScore(targetScore);
+                
+                // Update nudge
+                document.getElementById('nudge-text').textContent = activity.nudge;
+                
+                // Update stats
+                document.getElementById('keystrokes').textContent = (1247 + Math.floor(Math.random() * 100)).toLocaleString();
+                document.getElementById('focus-streak').textContent = Math.floor(Math.random() * 3) + 4;
+                document.getElementById('distractions').textContent = Math.floor(Math.random() * 2) + 1;
+                
+                currentIndex++;
+            }, 8000); // Change activity every 8 seconds
+        }
+        
+        // Animate score changes
+        function animateScore(targetScore) {
+            const startScore = currentScore;
+            const duration = 1000;
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                currentScore = Math.round(startScore + (targetScore - startScore) * progress);
+                updateScoreCircle(currentScore);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
+        }
+        
+        // Toggle tracking
+        document.getElementById('toggle-btn').addEventListener('click', () => {
+            isTracking = !isTracking;
+            const btn = document.getElementById('toggle-btn');
+            const statusText = document.getElementById('status-text');
+            const statusDot = document.querySelector('.status-dot');
+            
+            if (isTracking) {
+                btn.textContent = 'Stop Tracking';
+                btn.className = 'btn btn-primary';
+                statusText.textContent = 'Tracking Active';
+                statusDot.style.background = '#22c55e';
+            } else {
+                btn.textContent = 'Start Tracking';
+                btn.className = 'btn btn-secondary';
+                statusText.textContent = 'Tracking Stopped';
+                statusDot.style.background = '#ef4444';
+            }
+        });
+        
+        // Settings button
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            alert('Settings panel would open here. This would include:\n\n• API configuration\n• Screenshot settings\n• Notification preferences\n• Data privacy options\n• User authentication');
+        });
+        
+        // Initialize
+        updateScoreCircle(currentScore);
+        updateSessionTime();
+        setInterval(updateSessionTime, 60000); // Update every minute
+        simulateActivity();
+        
+        // Simulate some initial activity
+        setTimeout(() => {
+            animateScore(87);
+            document.getElementById('nudge-text').textContent = 'Excellent React development! Your component structure looks clean and maintainable.';
+        }, 2000);
+    </script>
+</body>
+</html>
+
