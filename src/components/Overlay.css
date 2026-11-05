@@ -1,0 +1,233 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden;
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.overlay-container {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color: #e6e6e6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 10px 14px;
+  background: rgba(15, 15, 15, 0.45);
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Platform-specific styling */
+.overlay-mac {
+  background: rgba(30, 30, 30, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.overlay-windows {
+  background: rgba(20, 20, 20, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.overlay-default {
+  background: rgba(15, 15, 15, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Dragging state */
+.overlay-dragging {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.overlay-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.overlay-time {
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.overlay-meta {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.25rem;
+  max-width: 600px;
+  text-align: center;
+  word-break: break-word;
+}
+
+.overlay-title {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.overlay-url {
+  color: #9ad1ff;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.overlay-metrics {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.overlay-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.overlay-metric-label {
+  opacity: 0.7;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+
+.overlay-metric-value {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Productivity scores */
+.overlay-productivity {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.overlay-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.overlay-score-label {
+  opacity: 0.7;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+
+.overlay-score-value {
+  font-weight: 700;
+  font-size: 14px;
+  color: #4ade80;
+}
+
+/* Context and insight */
+.overlay-context {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 10px;
+  opacity: 0.8;
+  max-width: 300px;
+}
+
+.overlay-insight {
+  font-weight: 500;
+  color: #a78bfa;
+  margin-bottom: 2px;
+}
+
+.overlay-context-label {
+  opacity: 0.6;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Platform indicator */
+.overlay-platform-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 12px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.overlay-container:hover .overlay-platform-indicator {
+  opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 400px) {
+  .overlay-container {
+    padding: 8px 12px;
+  }
+  
+  .overlay-time {
+    font-size: 24px;
+  }
+  
+  .overlay-metrics {
+    gap: 12px;
+  }
+  
+  .overlay-metric-label {
+    font-size: 8px;
+  }
+  
+  .overlay-metric-value {
+    font-size: 11px;
+  }
+}
+

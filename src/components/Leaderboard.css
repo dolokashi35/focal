@@ -1,0 +1,60 @@
+/* Leaderboard page specific styles. Shared structure lives in Dashboard.css */
+
+.podium-1 {
+  /* Gold glow */
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
+}
+
+.podium-2 {
+  /* Silver glow */
+  box-shadow: 0 6px 18px rgba(192, 192, 192, 0.15);
+}
+
+.podium-3 {
+  /* Bronze glow */
+  box-shadow: 0 6px 18px rgba(205, 127, 50, 0.15);
+}
+
+.podium-spot .podium-user {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .podium {
+    grid-template-columns: 1fr;
+  }
+  .podium-1, .podium-2, .podium-3 {
+    height: auto;
+  }
+}
+
+
+/* Top-left back button styled similar to Garden titlebar back */
+.leaderboard-back {
+  position: sticky;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 12px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(17, 22, 26, 0.6);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+  z-index: 2;
+}
+
+.leaderboard-back:hover {
+  background: rgba(89, 220, 178, 0.22);
+  border-color: rgba(126, 245, 201, 0.4);
+}
+
+.leaderboard-back-text {
+  font-weight: 500;
+}
+

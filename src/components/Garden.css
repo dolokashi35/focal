@@ -1,0 +1,1232 @@
+:root {
+  color-scheme: dark;
+  --bg-primary: #0c1115;
+  --bg-surface: #141a1f;
+  --bg-surface-alt: #1b2228;
+  --bg-surface-soft: #1f272e;
+  --border-color: rgba(101, 232, 189, 0.18);
+  --border-subtle: rgba(101, 232, 189, 0.08);
+  --text-primary: #eef8f3;
+  --text-secondary: rgba(215, 237, 229, 0.72);
+  --accent: #59dcb2;
+  --accent-strong: #7ef5c9;
+  --accent-soft: rgba(89, 220, 178, 0.16);
+  --danger: #f87171;
+  --titlebar-height: 44px;
+  --toolbar-height: 104px;
+  --plot-progress-seed: #59dcb2;
+  --plot-progress-sprout: #72f0c4;
+  --plot-progress-bloom: #3ec197;
+  --plot-progress-harvest: #9cf3ce;
+  --plot-card-height: 280px;
+  background-color: var(--bg-primary);
+  font-size: 18px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  background-color: var(--accent);
+  border: none;
+  color: #062a1f;
+  padding: 0.55rem 1.05rem;
+  border-radius: 0.65rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(89, 220, 178, 0.25);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(89, 220, 178, 0.18);
+}
+
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-primary);
+  position: relative;
+  /* Reserve enough space below so content sits ~4-8px higher above the toolbar */
+  padding-bottom: calc(var(--toolbar-height) + 0.75rem);
+}
+
+.app {
+  width: min(1280px, 100%);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 2.5rem 2rem;
+  overflow: hidden;
+}
+
+.app--loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.5rem;
+  padding: 3rem 4rem;
+  text-align: center;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.app__titlebar {
+  width: 100%;
+  max-width: 1400px;
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.25rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  -webkit-app-region: drag;
+  user-select: none;
+  gap: 1rem;
+}
+
+.app__titlebar span {
+  pointer-events: none;
+}
+
+.app__titlebar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(17, 22, 26, 0.6);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  text-transform: none;
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.app__titlebar-back:hover {
+  background: rgba(89, 220, 178, 0.22);
+  border-color: rgba(126, 245, 201, 0.4);
+  transform: translateY(-1px);
+}
+
+.app__titlebar-back:active {
+  transform: translateY(0);
+}
+
+.app__titlebar-back-text {
+  font-weight: 500;
+}
+
+.app__titlebar-tagline {
+  font-weight: 600;
+}
+
+.app__titlebar-version {
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.app__toast {
+  position: absolute;
+  top: calc(var(--titlebar-height) + 12px);
+  left: 50%;
+  padding: 0.65rem 1.1rem;
+  background: rgba(26, 32, 38, 0.95);
+  border-radius: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 16px 32px rgba(6, 12, 14, 0.46);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.app__toast--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.app__toast--hiding {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.app__toggle-button {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--accent-strong);
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.65rem;
+  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+.app__toggle-button:not(.app__toggle-button--filled):hover {
+  background-color: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+.app__toggle-button--filled {
+  background-color: var(--accent-soft);
+  border-color: var(--border-color);
+  color: var(--accent-strong);
+  box-shadow: none;
+}
+
+.app__toggle-button--filled:hover {
+  background-color: var(--accent-strong);
+  color: #052418;
+  box-shadow: 0 16px 28px rgba(89, 220, 178, 0.34);
+  border-color: transparent;
+}
+
+.inventory-toolbar {
+  position: fixed;
+  left: 50%;
+  /* Hug the bottom edge to free space above for the garden */
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(1220px, calc(100% - 3rem));
+  background: rgba(17, 22, 26, 0.9);
+  border: 1px solid var(--border-subtle);
+  /* Square bottom corners for a sleeker docked toolbar look */
+  border-radius: 1rem 1rem 0 0;
+  padding: 0.65rem 1.15rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 36px rgba(5, 10, 12, 0.45);
+  z-index: 60;
+  position: fixed;
+  /* Allow seed hover elevation to render outside rounded top */
+  overflow: visible;
+}
+
+.inventory-toolbar__coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--border-subtle);
+  background: rgba(89, 220, 178, 0.12);
+  box-shadow: 0 12px 24px rgba(6, 12, 14, 0.35);
+}
+
+.inventory-toolbar__coin-icon,
+.coin-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff6b2, #facc15 55%, #d9981f);
+  box-shadow: 0 2px 6px rgba(250, 204, 21, 0.25);
+}
+
+.inventory-toolbar__coin-amount {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #facc15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.inventory-toolbar__rail {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding-left: 0;
+}
+
+.inventory-toolbar__seeds {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  flex: 1;
+  overflow-x: auto;
+  /* Allow hover lift and shadows above the rail */
+  overflow-y: visible;
+  padding: 0.1rem 0.25rem;
+  scrollbar-width: none;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0,
+      rgba(0, 0, 0, 1) 28px,
+      rgba(0, 0, 0, 1) calc(100% - 28px),
+      transparent 100%);
+  mask-image: linear-gradient(to right,
+      transparent 0,
+      rgba(0, 0, 0, 1) 28px,
+      rgba(0, 0, 0, 1) calc(100% - 28px),
+      transparent 100%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.inventory-toolbar__seeds::-webkit-scrollbar {
+  display: none;
+}
+
+.inventory-toolbar__seed {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.85rem;
+  padding: 0.6rem 0.85rem;
+  min-width: 180px;
+  /* Keep a consistent taller height to allow up to two title lines */
+  min-height: 68px;
+  /* Do not allow shrinking so long meta expands horizontally */
+  flex: 0 0 auto;
+  cursor: grab;
+  position: relative;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.inventory-toolbar__seed-info {
+  display: grid;
+  gap: 0.2rem;
+  /* Allow this grid to shrink so children can ellipsis */
+  min-width: 0;
+}
+
+.inventory-toolbar__seed-name {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  /* Allow up to two lines, then ellipsis */
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.inventory-toolbar__seed-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  /* Do not wrap to keep consistent height */
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  /* Let the chip grow horizontally instead of clipping */
+  overflow: visible;
+}
+
+.inventory-toolbar__seed-meta-time {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.inventory-toolbar__seed-meta-reward {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.inventory-toolbar__clock-icon {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.inventory-toolbar__clock-icon::before,
+.inventory-toolbar__clock-icon::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+
+.inventory-toolbar__clock-icon::before {
+  width: 1.5px;
+  height: 0.2rem;
+  left: 50%;
+  top: 0.1rem;
+  transform: translateX(-50%);
+}
+
+.inventory-toolbar__clock-icon::after {
+  width: 1.5px;
+  height: 0.2rem;
+  left: 50%;
+  bottom: 0.1rem;
+  transform: translateX(-50%);
+}
+
+.inventory-toolbar__seed-coin-icon {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff6b2, #facc15 55%, #d9981f);
+  box-shadow: inset 0 1px 2px rgba(250, 204, 21, 0.3);
+  flex: 0 0 auto;
+}
+
+.inventory-toolbar__seed-count {
+  font-size: 1.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-strong);
+  min-width: 2ch;
+  text-align: right;
+}
+
+.inventory-toolbar__seed:not(.inventory-toolbar__seed--empty):hover {
+  border-color: var(--border-color);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(6, 12, 14, 0.5);
+  z-index: 2;
+}
+
+.inventory-toolbar__seed:active {
+  cursor: grabbing;
+}
+
+.inventory-toolbar__seed--empty {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.inventory-toolbar__side {
+  --inventory-shop-width: 184px;
+  --inventory-shop-height: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: flex-end;
+}
+
+.inventory-toolbar__shop {
+  width: var(--inventory-shop-width);
+  min-width: var(--inventory-shop-width);
+  padding: 0.5rem 1.3rem;
+  min-height: var(--inventory-shop-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inventory-toolbar__status {
+  /* Use grid so both children (multiplier + coins) naturally share the same row height */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 0.4rem;
+  width: var(--inventory-shop-width);
+  min-width: var(--inventory-shop-width);
+}
+
+.inventory-toolbar__multiplier {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-strong);
+  gap: 0.15rem;
+}
+
+.inventory-toolbar__coins {
+  width: calc(var(--inventory-shop-width) / 2);
+  min-width: calc(var(--inventory-shop-width) / 2);
+  min-height: 0;
+  height: 100%;
+  /* Fill the grid row height and center contents */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Remove vertical padding so the background matches the full height */
+  padding-block: 0;
+  padding-inline: 0.8rem;
+  box-sizing: border-box;
+}
+
+.inventory-toolbar__multiplier span {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(215, 237, 229, 0.6);
+}
+
+.inventory-toolbar__multiplier strong {
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.app__toggle-button--inline {
+  padding: 0.45rem 0.9rem;
+}
+
+.app__error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+}
+
+.app__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.app__main>* {
+  width: 100%;
+}
+
+.garden-section,
+.seed-shop,
+.decorations-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.5rem;
+  padding: 1.35rem;
+  display: grid;
+  gap: 1.25rem;
+  box-shadow: 0 14px 34px rgba(6, 12, 14, 0.38);
+}
+
+.garden-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* Balance vertical padding top/bottom for a consistent frame */
+  padding: 0.8rem 1.15rem 0.8rem;
+  gap: 0.4rem;
+}
+
+.garden-section h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.seed-shop h2,
+.decorations-panel h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.garden-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.plot-card {
+  background: var(--bg-surface-alt);
+  border-radius: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  padding: 1.25rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* Tighten vertical spacing so footer (progress/harvest)
+     sits a bit higher inside the card */
+  gap: 0.5rem;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  min-height: var(--plot-card-height);
+  height: var(--plot-card-height);
+  box-shadow: 0 12px 28px rgba(6, 12, 14, 0.32);
+  /* Ensure inner content respects rounded corners so
+     progress/harvest controls don’t leak outside */
+  /* Allow hovered seed cards to rise without clipping */
+  overflow: visible;
+}
+
+.plot-card:hover {
+  border-color: var(--border-color);
+  transform: translateY(-2px);
+}
+
+.plot-card--ready {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 28px rgba(126, 245, 201, 0.45);
+  cursor: pointer;
+}
+
+.plot-card--ready:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+.plot-card--shake {
+  animation: plotCardShake 0.45s ease;
+}
+
+.plot-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+.plot-card__title {
+  font-weight: 600;
+}
+
+.plot-card__stage {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.plot-card__body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Reduce body min-height so it doesn't push the footer down */
+  min-height: 150px;
+}
+
+.plot-card__empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 2px dashed rgba(126, 245, 201, 0.18);
+  border-radius: 1rem;
+  color: rgba(217, 238, 231, 0.5);
+  font-weight: 600;
+}
+
+.plot-card__footer {
+  display: grid;
+  gap: 0.5rem;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 36px;
+}
+
+.plot-card__progress {
+  background: var(--accent-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.plot-card__progress-bar {
+  height: 100%;
+  transition: width 0.6s ease;
+}
+
+.plot-card__progress-text {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.plot-card--overlay-selected {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 26px rgba(126, 245, 201, 0.45);
+}
+
+.plot-card__overlay-button {
+  background: rgba(89, 220, 178, 0.12);
+  border: 1px solid rgba(89, 220, 178, 0.35);
+  color: var(--accent-strong);
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.plot-card__overlay-button:hover {
+  background: rgba(89, 220, 178, 0.22);
+  border-color: rgba(126, 245, 201, 0.65);
+  transform: none;
+  box-shadow: none;
+}
+
+.plot-card__overlay-button:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.plot-card__overlay-button--active {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #063024;
+}
+
+.plot-card__overlay-button--active:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #041a14;
+}
+
+.plot-card__hint {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.plot-plant {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 0.5s ease;
+}
+
+.plot-plant__reveal {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  transition: clip-path 0.6s ease;
+  will-change: clip-path;
+  position: relative;
+}
+
+.plot-plant__reveal--illustrated {
+  align-items: center;
+}
+
+.plot-plant--illustrated {
+  align-items: center;
+  justify-content: center;
+}
+
+.plot-plant--illustrated.plot-plant--growing,
+.plot-plant--illustrated.plot-plant--harvest-ready {
+  animation: none;
+}
+
+.plot-plant__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 38px rgba(126, 245, 201, 0.2));
+  transition: transform 0.6s ease;
+}
+
+.plot-plant__glow {
+  position: absolute;
+  inset: -25%;
+  background: radial-gradient(circle, rgba(126, 245, 201, 0.45) 0%, rgba(126, 245, 201, 0.12) 45%, rgba(126, 245, 201, 0) 72%);
+  filter: blur(18px);
+  opacity: 0.85;
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.plot-plant--growing {
+  animation: plantSway 6s ease-in-out infinite;
+}
+
+.plot-plant--harvest-ready {
+  animation: plantGlow 2.6s ease-in-out infinite;
+}
+
+.plot-plant__stem {
+  width: 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(89, 220, 178, 0.95), rgba(32, 83, 63, 0.96));
+  height: 80%;
+  position: relative;
+}
+
+.plot-plant__stem--blossom {
+  background: linear-gradient(180deg, rgba(126, 245, 201, 0.95), rgba(49, 118, 94, 0.95));
+}
+
+.plot-plant__stem--evergreen {
+  background: linear-gradient(180deg, rgba(46, 148, 104, 0.95), rgba(16, 61, 41, 0.96));
+}
+
+.plot-plant__bloom {
+  position: absolute;
+  bottom: 70%;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), transparent),
+    rgba(126, 245, 201, 0.9);
+  filter: blur(0.2px);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+.plot-plant__bloom--seedling {
+  opacity: 0.4;
+  transform: scale(0.4);
+}
+
+.plot-plant__bloom--sprouting {
+  opacity: 0.65;
+  transform: scale(0.7);
+  background: rgba(121, 243, 205, 0.85);
+}
+
+.plot-plant__bloom--blooming {
+  opacity: 0.9;
+  transform: scale(0.95);
+  background: rgba(92, 225, 176, 0.88);
+}
+
+.plot-plant__bloom--readytoharvest {
+  opacity: 1;
+  box-shadow: 0 0 32px rgba(126, 245, 201, 0.5);
+  transform: scale(1.05);
+  background: rgba(126, 245, 201, 0.95);
+}
+
+.app-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 80;
+}
+
+.app-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 10, 12, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.app-overlay__panel {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: min(80vh, 720px);
+  background: var(--bg-surface);
+  border-radius: 1.35rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 48px 88px rgba(5, 10, 12, 0.65);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-overlay__panel--compact {
+  width: min(520px, 100%);
+  max-height: min(76vh, 640px);
+}
+
+@keyframes plantSway {
+
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes plantGlow {
+
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(126, 245, 201, 0.35));
+  }
+
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 24px rgba(126, 245, 201, 0.55));
+  }
+}
+
+@keyframes plotCardShake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.seed-shop header p,
+.decorations-panel header p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+}
+
+.seed-shop {
+  max-height: 100%;
+  width: 100%;
+  flex: 1;
+  display: grid;
+  gap: 1.25rem;
+  overflow-y: auto;
+  padding-bottom: 0.5rem;
+  scroll-padding-top: 1.25rem;
+  scrollbar-width: none;
+}
+
+.seed-shop::-webkit-scrollbar {
+  display: none;
+}
+
+.seed-shop header {
+  display: grid;
+  gap: 0.35rem;
+  position: sticky;
+  top: 0;
+  /* Make header fully opaque and extend it to the container edges so
+     the scrolling list content cannot bleed through above it. */
+  background: var(--bg-surface);
+  /* Pull the header out to the container edges (counter the parent padding). */
+  margin-top: -1.35rem;
+  margin-left: -1.35rem;
+  margin-right: -1.35rem;
+  padding: 1.35rem 3rem 1rem 1.35rem;
+  border-bottom: 1px solid var(--border-subtle);
+  /* Ensure it stays above the scrolling list */
+  z-index: 5;
+  /* Let the parent panel control the rounded corners. Making the header square
+     avoids transparent corner wedges where content could show through. */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: 0 18px 32px rgba(6, 12, 14, 0.45);
+}
+
+/* Cover the rounded top corners with an opaque layer tied to the header so
+  scrolled content cannot appear in the curved wedges above the header. */
+.seed-shop header::before {
+  content: '';
+  position: absolute;
+  /* Extend above and to the sides to the panel’s padding edges */
+  top: -1.35rem;
+  left: -1.35rem;
+  right: -1.35rem;
+  bottom: 0;
+  background: var(--bg-surface);
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  /* Sit behind header content but above the scrolling list */
+  z-index: -1;
+}
+
+.seed-shop__close {
+  position: absolute;
+  top: 1.35rem;
+  right: 1.35rem;
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.seed-shop__close:hover {
+  background: rgba(248, 113, 113, 0.14);
+  /* soft red fill */
+  color: var(--danger);
+  border-color: var(--danger);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Prevent global active shadow/lift on this button */
+.seed-shop__close:active {
+  transform: none;
+  box-shadow: none;
+  background: rgba(248, 113, 113, 0.22);
+}
+
+.seed-shop__list {
+  display: grid;
+  gap: 1rem;
+  padding-right: 0.2rem;
+  padding-top: 0.35rem;
+}
+
+.seed-card {
+  background: var(--bg-surface-alt);
+  border-radius: 1.1rem;
+  padding: 1.15rem;
+  border: 1px solid var(--border-subtle);
+  display: grid;
+  gap: 0.75rem;
+  cursor: grab;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 26px rgba(6, 12, 14, 0.3);
+}
+
+.seed-card:active {
+  cursor: grabbing;
+}
+
+.seed-card:hover {
+  border-color: var(--border-color);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(6, 12, 14, 0.4);
+}
+
+.seed-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.seed-card__header h3 {
+  margin: 0;
+}
+
+.seed-card__type {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.seed-card__description {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.seed-card__stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  color: var(--text-secondary);
+}
+
+.seed-card footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.seed-card footer button {
+  min-width: 96px;
+}
+
+/* Compact buy button with coin icon + amount */
+.seed-card__buy {
+  min-width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.7rem;
+}
+
+.seed-card__buy .coin-amount {
+  font-weight: 700;
+  color: #052418;
+  /* ensure readable on accent background */
+  font-variant-numeric: tabular-nums;
+}
+
+.decorations-panel__list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.decorations-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.decorations-panel header>div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.decorations-panel__close {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--accent-strong);
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.6rem;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.decorations-panel__close:hover {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  transform: none;
+  box-shadow: none;
+}
+
+.decoration-card {
+  background: var(--bg-surface-alt);
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.decoration-card p {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1400px) {
+  .app {
+    width: min(1150px, 100%);
+    padding: 1.25rem 1.75rem 1.75rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  :root {
+    font-size: 17px;
+  }
+
+  .app__titlebar {
+    max-width: 100%;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    font-size: 16px;
+  }
+
+  .app {
+    padding: 1rem 1.25rem 1.5rem;
+  }
+
+  .app__titlebar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    height: auto;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .inventory-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.85rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .inventory-toolbar__coins {
+    position: static;
+    align-self: flex-start;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .inventory-toolbar__rail {
+    padding-left: 0;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .inventory-toolbar__seeds {
+    width: 100%;
+  }
+
+  .inventory-toolbar__side {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .inventory-toolbar__shop {
+    width: 100%;
+  }
+
+  .inventory-toolbar__multiplier {
+    align-items: flex-start;
+  }
+}

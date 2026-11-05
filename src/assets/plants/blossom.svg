@@ -1,0 +1,18 @@
+<svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="lilacBloom" cx="50%" cy="30%" r="60%">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.75"/>
+      <stop offset="0.55" stop-color="#CBB5FF"/>
+      <stop offset="1" stop-color="#6F4EC9"/>
+    </radialGradient>
+    <linearGradient id="mintStem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7EF5C9"/>
+      <stop offset="1" stop-color="#2F7B5A"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <circle cx="80" cy="60" r="48" fill="url(#lilacBloom)"/>
+    <rect x="74" y="72" width="12" height="72" rx="6" fill="url(#mintStem)"/>
+    <path d="M54 102c12-10 18-10 26-2 8-8 14-8 26 2-12 0-20 6-26 16-6-10-14-16-26-16z" fill="#72F0C4" fill-opacity="0.58"/>
+  </g>
+</svg>
